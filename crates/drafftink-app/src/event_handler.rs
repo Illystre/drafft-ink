@@ -1028,8 +1028,46 @@ impl EventHandler {
                     SnapResult::none(target_position)
                 }
             } else {
-                // Regular grid snapping for non-line shapes
-                if grid_snap_enabled {
+                // Non-line shape: corner resize or move
+                let is_corner_resize = matches!(manip.handle, Some(HandleKind::Corner(_)));
+                if is_corner_resize && smart_snap_enabled {
+                    // Snap resize handle to other shapes' edges/centers
+                    let snap_zone = Rect::from_center_size(
+                        target_position,
+                        Size::new(ENDPOINT_SNAP_RADIUS * 2.0, ENDPOINT_SNAP_RADIUS * 2.0),
+                    );
+                    let other_bounds =
+                        collect_snap_candidates(canvas, &[manip.shape_id], Some(snap_zone));
+
+                    let guide_result = detect_smart_guides_for_point(
+                        target_position,
+                        &other_bounds,
+                        SMART_GUIDE_THRESHOLD,
+                    );
+
+                    let mut result_point = guide_result.point;
+
+                    if grid_snap_enabled {
+                        // Only grid-snap axes that weren't smart-snapped
+                        let grid_result = snap_to_grid(result_point, GRID_SIZE);
+                        if !guide_result.snapped_x {
+                            result_point.x = grid_result.point.x;
+                        }
+                        if !guide_result.snapped_y {
+                            result_point.y = grid_result.point.y;
+                        }
+                    }
+
+                    if guide_result.snapped_x || guide_result.snapped_y {
+                        self.smart_guides = guide_result.guides;
+                    }
+
+                    SnapResult {
+                        point: result_point,
+                        snapped_x: guide_result.snapped_x || grid_snap_enabled,
+                        snapped_y: guide_result.snapped_y || grid_snap_enabled,
+                    }
+                } else if grid_snap_enabled {
                     snap_to_grid(target_position, GRID_SIZE)
                 } else {
                     SnapResult::none(target_position)
