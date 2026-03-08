@@ -2420,15 +2420,36 @@ impl ShapeRenderer for VelloRenderer {
             }
             Shape::Line(line) => {
                 let path = shape.to_path();
-                self.render_stroke_only(&path, shape.style(), line.stroke_style, shape_transform);
+                if line.closed {
+                    self.render_path_cached(
+                        &shape.id().to_string(),
+                        &path,
+                        shape.style(),
+                        shape_transform,
+                    );
+                } else {
+                    self.render_stroke_only(
+                        &path,
+                        shape.style(),
+                        line.stroke_style,
+                        shape_transform,
+                    );
+                }
             }
             Shape::Arrow(arrow) => {
                 let path = shape.to_path();
                 self.render_stroke_only(&path, shape.style(), arrow.stroke_style, shape_transform);
             }
             Shape::Freehand(freehand) => {
-                // Freehand with pressure support
-                if freehand.has_pressure() {
+                if freehand.closed {
+                    let path = shape.to_path();
+                    self.render_path_cached(
+                        &shape.id().to_string(),
+                        &path,
+                        shape.style(),
+                        shape_transform,
+                    );
+                } else if freehand.has_pressure() {
                     self.render_freehand_with_pressure(freehand, shape_transform);
                 } else {
                     let path = shape.to_path();

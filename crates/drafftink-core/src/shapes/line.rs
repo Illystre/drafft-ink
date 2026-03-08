@@ -34,6 +34,9 @@ pub struct Line {
     /// Stroke style (Solid, Dashed, Dotted).
     #[serde(default)]
     pub stroke_style: StrokeStyle,
+    /// Whether this line forms a closed polygon (first == last point).
+    #[serde(default)]
+    pub closed: bool,
     /// Style properties.
     pub style: ShapeStyle,
 }
@@ -48,6 +51,7 @@ impl Line {
             intermediate_points: Vec::new(),
             path_style: PathStyle::Direct,
             stroke_style: StrokeStyle::default(),
+            closed: false,
             style: ShapeStyle::default(),
         }
     }
@@ -69,6 +73,7 @@ impl Line {
             intermediate_points,
             path_style,
             stroke_style,
+            closed: false,
             style,
         }
     }
@@ -89,6 +94,7 @@ impl Line {
             intermediate_points,
             path_style,
             stroke_style: StrokeStyle::default(),
+            closed: false,
             style: ShapeStyle::default(),
         }
     }
@@ -203,6 +209,9 @@ impl ShapeTrait for Line {
                     path.curve_to(cp1, cp2, p2);
                 }
             }
+        }
+        if self.closed {
+            path.close_path();
         }
         path
     }

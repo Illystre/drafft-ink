@@ -12,6 +12,9 @@ use uuid::Uuid;
 /// Maximum number of undo states to keep.
 const MAX_UNDO_HISTORY: usize = 50;
 
+/// Distance threshold for detecting closed polygons (first ≈ last point).
+const CLOSED_PATH_THRESHOLD: f64 = 10.0;
+
 /// A snapshot of document state for undo/redo.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct DocumentSnapshot {
@@ -373,8 +376,17 @@ impl CanvasDocument {
                             })
                             .collect();
                         if !freehand_points.is_empty() {
-                            let mut freehand = Freehand::from_points(freehand_points);
+                            let mut freehand = Freehand::from_points(freehand_points.clone());
                             freehand.style = style;
+                            if freehand_points.len() >= 3 {
+                                let first = freehand_points.first().unwrap();
+                                let last = freehand_points.last().unwrap();
+                                if (first.x - last.x).abs() < CLOSED_PATH_THRESHOLD
+                                    && (first.y - last.y).abs() < CLOSED_PATH_THRESHOLD
+                                {
+                                    freehand.closed = true;
+                                }
+                            }
                             Some(Shape::Freehand(freehand))
                         } else {
                             None
@@ -402,8 +414,18 @@ impl CanvasDocument {
                                 } else {
                                     PathStyle::Direct
                                 };
-                            let mut line = Line::from_points(line_points, path_style);
+                            let mut line = Line::from_points(line_points.clone(), path_style);
                             line.style = style;
+                            // Detect closed polygon (first ~= last point)
+                            if line_points.len() >= 3 {
+                                let first = line_points.first().unwrap();
+                                let last = line_points.last().unwrap();
+                                if (first.x - last.x).abs() < CLOSED_PATH_THRESHOLD
+                                    && (first.y - last.y).abs() < CLOSED_PATH_THRESHOLD
+                                {
+                                    line.closed = true;
+                                }
+                            }
                             Some(Shape::Line(line))
                         } else {
                             None

@@ -14,6 +14,9 @@ pub struct Freehand {
     /// Pressure values per point (0.0-1.0). If empty, uniform pressure is assumed.
     #[serde(default)]
     pub pressures: Vec<f64>,
+    /// Whether this freehand path forms a closed polygon.
+    #[serde(default)]
+    pub closed: bool,
     /// Style properties.
     pub style: ShapeStyle,
 }
@@ -25,6 +28,7 @@ impl Freehand {
             id: Uuid::new_v4(),
             points: Vec::new(),
             pressures: Vec::new(),
+            closed: false,
             style: ShapeStyle::default(),
         }
     }
@@ -35,6 +39,7 @@ impl Freehand {
             id: Uuid::new_v4(),
             points,
             pressures: Vec::new(),
+            closed: false,
             style: ShapeStyle::default(),
         }
     }
@@ -45,6 +50,7 @@ impl Freehand {
             id: Uuid::new_v4(),
             points,
             pressures,
+            closed: false,
             style: ShapeStyle::default(),
         }
     }
@@ -60,6 +66,7 @@ impl Freehand {
             id,
             points,
             pressures,
+            closed: false,
             style,
         }
     }
@@ -265,6 +272,9 @@ impl ShapeTrait for Freehand {
         path.move_to(self.points[0]);
         for point in self.points.iter().skip(1) {
             path.line_to(*point);
+        }
+        if self.closed {
+            path.close_path();
         }
 
         path
