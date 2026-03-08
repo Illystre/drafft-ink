@@ -2412,7 +2412,7 @@ impl ShapeRenderer for VelloRenderer {
                 // Render each child in the group
                 for child in group.children() {
                     // Children are not individually selected when the group is selected
-                    self.render_shape(child, transform, false);
+                    self.render_shape(child, shape_transform, false);
                 }
             }
             Shape::Image(image) => {
