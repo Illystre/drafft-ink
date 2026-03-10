@@ -821,8 +821,8 @@ impl VelloRenderer {
         // Build cache key from content hash
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         text.content.hash(&mut hasher);
-        (text.font_family.clone() as u8).hash(&mut hasher);
-        (text.font_weight.clone() as u8).hash(&mut hasher);
+        (text.font_family as u8).hash(&mut hasher);
+        (text.font_weight as u8).hash(&mut hasher);
         text.font_size.to_bits().hash(&mut hasher);
         text.char_colors.len().hash(&mut hasher);
         for c in &text.char_colors {

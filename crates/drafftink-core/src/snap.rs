@@ -968,8 +968,7 @@ fn detect_equal_spacing_h(
         }
         // Walk right from the rightmost shape
         cur = sorted[ri];
-        for k in (ri + 1)..sorted.len() {
-            let candidate = sorted[k];
+        for candidate in &sorted[(ri + 1)..] {
             if (candidate.x0 - (cur.x1 + spacing)).abs() < 1.0 {
                 let y = ((candidate.y0 + candidate.y1) / 2.0).min((cur.y0 + cur.y1) / 2.0);
                 result.guides.push(SmartGuide {
@@ -1123,8 +1122,7 @@ fn detect_equal_spacing_v(
             }
         }
         cur = sorted[bi];
-        for k in (bi + 1)..sorted.len() {
-            let candidate = sorted[k];
+        for candidate in &sorted[(bi + 1)..] {
             if (candidate.y0 - (cur.y1 + spacing)).abs() < 1.0 {
                 let x = ((candidate.x0 + candidate.x1) / 2.0).min((cur.x0 + cur.x1) / 2.0);
                 result.guides.push(SmartGuide {

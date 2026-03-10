@@ -34,7 +34,7 @@ fn self_snap_rects(shape: &Shape, handle: Option<HandleKind>) -> Vec<Rect> {
     points
         .iter()
         .enumerate()
-        .filter(|(i, _)| dragged_idx.map_or(true, |d| *i != d))
+        .filter(|(i, _)| dragged_idx.is_none_or(|d| *i != d))
         .map(|(_, pt)| Rect::new(pt.x, pt.y, pt.x, pt.y))
         .collect()
 }
@@ -59,9 +59,7 @@ fn collect_snap_candidates(
                 .is_zero_area()
         })
         .filter(|s| {
-            snap_zone.map_or(true, |z| {
-                !z.intersect(s.bounds().inflate(1.0, 1.0)).is_zero_area()
-            })
+            snap_zone.is_none_or(|z| !z.intersect(s.bounds().inflate(1.0, 1.0)).is_zero_area())
         })
         .take(MAX_SNAP_CANDIDATES)
     {
